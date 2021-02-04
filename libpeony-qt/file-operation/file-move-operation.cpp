@@ -351,6 +351,8 @@ retry:
         } else {
             file->setState(FileNode::Handled);
         }
+
+        fileSync(file->uri(), file->destUri());
         //FIXME: ignore the total size when using native move.
         operationProgressedOne(file->uri(), file->destUri(), 0);
     }
@@ -871,6 +873,9 @@ fallback_retry:
         m_current_offset += node->size();
         auto fileIconName = FileUtils::getFileIconName(m_current_src_uri, false);
         auto destFileName = FileUtils::isFileDirectory(node->destUri()) ? nullptr : node->destUri();
+
+        fileSync(node->uri(), realDestUri);
+
         Q_EMIT FileProgressCallback(node->uri(), destFileName, fileIconName, m_current_offset, m_total_szie);
         Q_EMIT operationProgressedOne(node->uri(), node->destUri(), node->size());
     }
@@ -1032,14 +1037,15 @@ start:
         auto dest_file = g_file_new_for_uri(destDirUri.toUtf8().constData());
         auto path = g_file_get_path(dest_file);
         g_object_unref(dest_file);
-        if (path) {
-            QProcess p;
-            auto shell_path = g_shell_quote(path);
-            g_free(path);
-            p.start(QString("sync -d %1").arg(shell_path));
-            g_free(shell_path);
-            p.waitForFinished(-1);
-        }
+
+//        if (path) {
+//            QProcess p;
+//            auto shell_path = g_shell_quote(path);
+//            g_free(path);
+//            p.start(QString("sync -d %1").arg(shell_path));
+//            g_free(shell_path);
+//            p.waitForFinished(-1);
+//        }
     }
     qDebug()<<"finished";
 end:
